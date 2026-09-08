@@ -8,23 +8,23 @@ import { kg } from '../lib/format'
 const REPO = 'https://github.com/wekesawgodwin/yield-prediction-and-agronomic-recomendation'
 
 /**
- * Contributions are taken from the repository's own commit history, so the
- * roles below describe what each person actually authored rather than a
- * nominal team list.
+ * Credits as the team states them. Started from the repository's commit
+ * history, then corrected by the project lead — some of the work (the
+ * presentation deck, sourcing the survey data) never lands as commits here.
  */
 const CONTRIBUTORS = [
   {
     name: 'Wekesa Godwin',
     handle: 'wekesawgodwin',
-    role: 'Weather pipeline, modelling & deployment',
+    role: 'Weather pipeline, modelling, deployment & front end',
     detail:
-      'Earth Engine rainfall and temperature features, the tuning and advanced-model notebooks, the district model, the API container and its Railway deployment.',
+      'Earth Engine rainfall and temperature features, the tuning and advanced-model notebooks, the district model, the API container and its Railway deployment, and the design of this front end.',
   },
   {
     name: 'Mohammed Ismail Abdi',
     handle: 'mohaski',
-    role: 'Feature engineering & API endpoints',
-    detail: 'Feature engineering, then the prediction, model-summary and recommendation-layer endpoints this app calls.',
+    role: 'Feature engineering & the backend API',
+    detail: 'Feature engineering, then the prediction, model-summary and recommendation-layer endpoints this app calls — completing the backend API it runs on.',
   },
   {
     name: 'Ibrahim George',
@@ -35,14 +35,20 @@ const CONTRIBUTORS = [
   {
     name: 'Mary G. Kahiga',
     handle: 'sonni-k',
-    role: 'Data quality',
-    detail: 'Season-specific valid ranges for weed pressure, invalid-entry handling, and the data layout the notebooks read.',
+    role: 'Data sourcing, understanding & quality',
+    detail: 'Sourcing the survey data and the data-understanding work behind the feature set, then season-specific valid ranges for weed pressure, invalid-entry handling, and the data layout the notebooks read.',
   },
   {
     name: 'Trevor Amayi',
     handle: 'trevoramayi-debug',
-    role: 'Integration & presentation',
-    detail: 'Branch integration across the team and the project presentation.',
+    role: 'Documentation, presentation & integration',
+    detail: 'Project documentation and the presentation deck, with Alvin Maina, and branch integration across the team.',
+  },
+  {
+    name: 'Alvin Maina',
+    handle: 'Zyrexn',
+    role: 'Documentation & presentation deck',
+    detail: 'Project documentation and the presentation deck, with Trevor Amayi.',
   },
 ]
 
@@ -189,7 +195,7 @@ export default function Home() {
       <section className="section">
         <h2>Acknowledgements</h2>
         <p className="small" style={{ marginTop: 6 }}>
-          Built by five contributors; the roles below are drawn from the repository's commit history.
+          Built by six contributors, each credited with the part of the work they led.
         </p>
         <div className="grid grid-2" style={{ marginTop: 16 }}>
           {CONTRIBUTORS.map((c) => (
