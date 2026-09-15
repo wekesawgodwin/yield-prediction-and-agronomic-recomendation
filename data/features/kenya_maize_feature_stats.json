@@ -50,7 +50,7 @@
   ],
   "weather": {
     "merged": true,
-    "source_file": "data\\weather\\kenya_maize_weather_features.csv",
+    "source_file": "data/weather/kenya_maize_weather_features.csv",
     "n_features": 90,
     "rainfall_dataset": "UCSB-CHG/CHIRPS/DAILY (0.05 deg)",
     "temperature_dataset": "ECMWF/ERA5_LAND/DAILY_AGGR (0.1 deg)",
@@ -61,8 +61,23 @@
     },
     "field_gps_rows_pct": 97.8
   },
+  "soil": {
+    "merged": true,
+    "source_file": "data/soil/kenya_maize_soil_features.csv",
+    "n_features": 7,
+    "dataset": "iSDAsoil (via sibling project's coordinate join; see merge_soil_data.py)",
+    "coverage_pct": {
+      "soil_ph": 97.8,
+      "soil_organic_carbon_gkg": 97.8,
+      "soil_nitrogen_gkg": 97.8,
+      "soil_clay_pct": 97.8,
+      "soil_sand_pct": 97.8,
+      "soil_cec_cmolkg": 97.8,
+      "soil_bulk_density_gcm3": 97.8
+    }
+  },
   "leakage_ratio_mean": 2.471050002168926,
-  "leakage_ratio_std": 2.2620119056744625e-07,
+  "leakage_ratio_std": 2.2620119056744537e-07,
   "columns_dropped_unusable": {
     "leakage": [
       "yield_kg_pa",
@@ -288,7 +303,7 @@
   "screen": {
     "coverage_threshold_pct": 60.0,
     "gate_b_min_train_years": 2,
-    "candidates": 226,
+    "candidates": 233,
     "failed_gate_a": [
       "basal_method",
       "chicks",
@@ -338,8 +353,8 @@
       "rain_mm_plant_to_harvest",
       "weed"
     ],
-    "n_in_full": 163,
-    "n_in_core": 176,
+    "n_in_full": 170,
+    "n_in_core": 183,
     "constant_in_holdout": [
       "comp_method_is_missing",
       "cv_fold",
@@ -360,7 +375,7 @@
     "plant_date_flagged_implausible"
   ],
   "roles": {
-    "condition": 118,
+    "condition": 125,
     "lever": 47,
     "flag": 21,
     "metadata": 17,
@@ -369,12 +384,12 @@
     "group_key": 3
   },
   "availability_tiers": {
-    "ex_ante": 140,
+    "ex_ante": 147,
     "mid_season": 82,
     "ex_post": 4
   },
   "manifest_decisions": {
-    "keep": 150,
+    "keep": 157,
     "drop": 53,
     "keep_core_only": 13,
     "infrastructure": 6,
@@ -438,11 +453,11 @@
   },
   "output_full_shape": [
     23674,
-    158
+    165
   ],
   "output_core_shape": [
     19798,
-    170
+    177
   ],
   "output_full_columns": [
     "yield_kg_ph",
@@ -513,6 +528,13 @@
     "rain_mm_season",
     "rain_mm_season_normal",
     "rain_mm_sep",
+    "soil_bulk_density_gcm3",
+    "soil_cec_cmolkg",
+    "soil_clay_pct",
+    "soil_nitrogen_gkg",
+    "soil_organic_carbon_gkg",
+    "soil_ph",
+    "soil_sand_pct",
     "tmax_c_apr",
     "tmax_c_aug",
     "tmax_c_feb",
@@ -673,6 +695,13 @@
     "rain_mm_season",
     "rain_mm_season_normal",
     "rain_mm_sep",
+    "soil_bulk_density_gcm3",
+    "soil_cec_cmolkg",
+    "soil_clay_pct",
+    "soil_nitrogen_gkg",
+    "soil_organic_carbon_gkg",
+    "soil_ph",
+    "soil_sand_pct",
     "tmax_c_apr",
     "tmax_c_aug",
     "tmax_c_feb",

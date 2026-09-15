@@ -62,6 +62,7 @@ import pandas as pd
 ROOT = Path(__file__).resolve().parent.parent
 CLEANED_CSV_PATH = ROOT / "data" / "cleaned" / "kenya_maize_cleaned.csv"
 WEATHER_FEATURES_PATH = ROOT / "data" / "weather" / "kenya_maize_weather_features.csv"
+SOIL_FEATURES_PATH = ROOT / "data" / "soil" / "kenya_maize_soil_features.csv"
 FEATURES_DIR = ROOT / "data" / "features"
 FEATURES_FULL_PATH = FEATURES_DIR / "kenya_maize_features_full.csv"
 FEATURES_CORE_PATH = FEATURES_DIR / "kenya_maize_features_core.csv"
@@ -280,6 +281,63 @@ def merge_weather_features(df):
         f"(CHIRPS rainfall + ERA5-Land temperature via Earth Engine); "
         f"season rainfall covers {coverage:.1f}% of rows, "
         f"{stats['weather']['field_gps_rows_pct']}% from the farmer's own GPS fix.")
+    return df
+
+
+# ---------------------------------------------------------------------------
+# 1c. Merge external soil features (iSDAsoil, via scripts/merge_soil_data.py)
+# ---------------------------------------------------------------------------
+# Built by scripts/merge_soil_data.py, which reuses an iSDAsoil pull already
+# fetched by the sibling yield-prediction project via a coordinate join (see
+# that script's docstring for provenance and the soil_ph scaling caveat).
+#
+# Merged HERE, before drop_unusable_columns, for the same reason as weather:
+# the join key is `unique_id`, which the very next stage drops as a
+# memorization key.
+#
+# OPTIONAL BY DESIGN, same contract as weather: a contributor without the
+# sibling project's soil pull must still be able to reproduce the rest of the
+# pipeline, so a missing file is logged and skipped rather than failing.
+SOIL_FEATURE_COLUMNS = []  # populated by merge_soil_features
+
+
+def merge_soil_features(df):
+    if not SOIL_FEATURES_PATH.exists():
+        stats["soil"] = {
+            "merged": False,
+            "reason": f"{SOIL_FEATURES_PATH.relative_to(ROOT)} not found",
+            "how_to_build": ["python scripts/merge_soil_data.py"],
+        }
+        log("No soil feature file found -- continuing without soil properties. "
+            "To build it: python scripts/merge_soil_data.py.")
+        return df
+
+    soil = pd.read_csv(SOIL_FEATURES_PATH, low_memory=False)
+    feature_cols = [c for c in soil.columns if c != "unique_id"]
+
+    before = len(df)
+    df = df.merge(
+        soil[["unique_id"] + feature_cols],
+        on="unique_id", how="left", validate="one_to_one",
+    )
+    assert len(df) == before, (
+        f"the soil merge changed the row count ({before} -> {len(df)}); "
+        "kenya_maize_soil_features.csv is not one row per survey row"
+    )
+
+    SOIL_FEATURE_COLUMNS.clear()
+    SOIL_FEATURE_COLUMNS.extend(feature_cols)
+
+    coverage = {c: round(float(df[c].notna().mean() * 100), 1) for c in feature_cols}
+    stats["soil"] = {
+        "merged": True,
+        "source_file": str(SOIL_FEATURES_PATH.relative_to(ROOT)),
+        "n_features": len(feature_cols),
+        "dataset": "iSDAsoil (via sibling project's coordinate join; see merge_soil_data.py)",
+        "coverage_pct": coverage,
+    }
+    log(f"Merged {len(feature_cols)} soil features (iSDAsoil); "
+        f"coverage {min(coverage.values()):.1f}-{max(coverage.values()):.1f}% across columns.")
     return df
 
 
@@ -1070,6 +1128,12 @@ def assign_roles_and_tiers(df, screen):
             tiers[col] = ("ex_ante" if col == "weather_location_is_field"
                           else _weather_tier(col))
             continue
+        if col in SOIL_FEATURE_COLUMNS:
+            # Fixed geography, like a weather normal: knowable years before
+            # planting and not a lever the farmer controls.
+            roles[col] = "condition"
+            tiers[col] = "ex_ante"
+            continue
         if col in ROLE_GROUP_KEY:
             roles[col] = "group_key"
         elif col in ROLE_METADATA or col in RAW_DATE_COLUMNS:
@@ -1274,7 +1338,7 @@ def _decision_reason(row, name):
 def build_manifest(df, screen):
     rows = []
     for name, row in screen.iterrows():
-        if name in WEATHER_FEATURE_COLUMNS:
+        if name in WEATHER_FEATURE_COLUMNS or name in SOIL_FEATURE_COLUMNS:
             source = "external"
         elif name in DERIVED_SOURCES:
             source = "aggregate" if name in AGGREGATE_FEATURES else "derived"
@@ -1297,7 +1361,9 @@ def build_manifest(df, screen):
         rows.append({
             "feature": name,
             "source": source,
-            "built_from": (_weather_built_from(name) if source == "external"
+            "built_from": (_weather_built_from(name) if name in WEATHER_FEATURE_COLUMNS
+                           else "iSDAsoil via coordinate join (see merge_soil_data.py)"
+                           if name in SOIL_FEATURE_COLUMNS
                            else DERIVED_SOURCES.get(name, "")),
             "dtype": str(df[name].dtype) if name in df.columns else "",
             "role": row["role"],
@@ -1407,6 +1473,7 @@ def save(df, manifest):
 def run():
     df = load_cleaned()
     df = merge_weather_features(df)
+    df = merge_soil_features(df)
     df = drop_unusable_columns(df)
     df = encode_ordinals(df)
     df = build_nutrient_features(df)
